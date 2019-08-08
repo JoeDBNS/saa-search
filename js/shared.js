@@ -68,7 +68,8 @@ var MainVue = new Vue({
     results_filtered: [],
     result_selected: null,
     map: null,
-    mapMarkers: []
+    mapMarkers: [],
+    debugText: ''
   },
   methods: {
     CallMiTalentAPI: function() {
@@ -76,8 +77,9 @@ var MainVue = new Vue({
 
       if (MainVue.search.length > 0) {
         let request = new XMLHttpRequest();
-  
-        var url = "https://test-webapi.mitalent.org/pathfinder/api/Schools?$inlinecount=allpages&$filter=substringof('" + MainVue.search + "', InstName1)%20eq%20true";
+
+        // var url = "https://test-webapi.mitalent.org/pathfinder/api/Schools?$inlinecount=allpages&$filter=substringof('" + MainVue.search + "', InstName1)%20eq%20true";
+        var url = app_environment.MiTalentTestApi.replace('__SearchVariable__', MainVue.search);
 
         request.onreadystatechange = function() {
           if (this.readyState === 4 && this.status === 200) {
@@ -88,15 +90,15 @@ var MainVue = new Vue({
                 MainVue.results.push(item);
               });
             }
-            
+
             MainVue.pending = false;
             MainVue.LoadMapboxMapMarkers(MainVue.results_filtered);
           }
         }
-  
+
         request.open("GET", url, true);
         request.send();
-  
+
         MainVue.pending = true;
       }
       else {
@@ -112,21 +114,25 @@ var MainVue = new Vue({
       latlongTotal = [0, 0];
       latlongAverage = [0, 0];
       markerCount = 0;
-    
+
       MainVue.map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
         center: [-86.025094, 44.598853], // starting position
         zoom: 5 // starting zoom
       });
-     
+
+      MainVue.map.on('click', function(e) {
+        MainVue.GetLatLongDistance([e.lngLat.lat, e.lngLat.lng], [42.72971417682561, -84.55454682089659]);
+      });
+
       // Add zoom and rotation controls to the map.
       MainVue.map.addControl(new mapboxgl.NavigationControl());
     },
     LoadMapboxMapMarkers: function(markers = []) {
       MainVue.ClearSelectedResult();
       MainVue.ClearMapboxMapMarkers();
-    
+
       markers.forEach(function(marker) {
         if (marker.Longitude && marker.Latitude) {
           // create a HTML element for each feature
@@ -139,12 +145,12 @@ var MainVue = new Vue({
           el.addEventListener('click', function() {
             MainVue.SelectResult(marker);
           });
-      
+
           // make a marker for each feature and add to the map
           var newMarker = new mapboxgl.Marker(el)
             .setLngLat([marker.Longitude, marker.Latitude])
             .addTo(MainVue.map);
-          
+
             MainVue.mapMarkers.push(newMarker);
         }
       });
@@ -215,6 +221,26 @@ var MainVue = new Vue({
         MainVue.results_filtered = MainVue.results;
       }
       MainVue.LoadMapboxMapMarkers(MainVue.results_filtered);
+    },
+    GetLatLongDistance: function(latLongSet1, latLongSet2) {
+      var R = 6371e3; // metres
+      var φ1 = MainVue.degrees_to_radians(latLongSet1[0]);
+      var φ2 = MainVue.degrees_to_radians(latLongSet2[0]);
+      var Δφ = MainVue.degrees_to_radians((latLongSet2[0] - latLongSet1[0]));
+      var Δλ = MainVue.degrees_to_radians((latLongSet2[1] - latLongSet1[1]));
+  
+      var a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  
+      var d = R * c;
+
+      MainVue.debugText = (latLongSet1.toString() + ' is ' + (d/1609.344).toFixed(2).toString() + ' Miles From ' + latLongSet2.toString());
+      console.log(latLongSet1.toString() + ' is ' + (d/1609.344).toFixed(2).toString() + ' Miles From ' + latLongSet2.toString());
+    },
+    degrees_to_radians: function(degrees)
+    {
+      var pi = Math.PI;
+      return degrees * (pi/180);
     }
   },
   watch: {

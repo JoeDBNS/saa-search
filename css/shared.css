@@ -222,10 +222,10 @@
     .input-label-radio {
         margin-right: 16px;
         padding: 4px 15px;
-        border: 1px solid lightgray;
+        border: 1px solid #c0d4e6;
         border-radius: 12px;
         box-shadow: none;
-        color: #838383;
+        color: #597a98;
         font-size: 13px;
         user-select: none;
         outline: none;
@@ -251,7 +251,7 @@
         float: left;
     }
     .input-label-radio-status {
-        background-color: #ececec;
+        background-color: #c0d4e6;
         height: 15px;
         width: 15px;
         border: 1px solid #bbbbbb;
