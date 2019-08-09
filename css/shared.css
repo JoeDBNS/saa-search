@@ -25,7 +25,7 @@
         }
     }
     .content-container-form {
-        padding: 26px 36px;
+        padding: 24px 36px;
     }
     .content-container-form-header {
         margin-bottom: 4px;
@@ -220,6 +220,7 @@
         opacity: 0;
     }
     .input-label-radio {
+        background-color: white;
         margin-right: 16px;
         padding: 4px 15px;
         border: 1px solid #c0d4e6;
@@ -267,6 +268,48 @@
 
 
 /* BUTTONS */
+    @keyframes ani-btn-loading {
+        0% {
+            box-shadow:
+                -1px 0 0 1px white,
+                0 -1px 0 1px white,
+                1px 0 0 1px white,
+                0 1px 0 2px #005CB9
+            ;
+        }
+        25% {
+            box-shadow:
+            0 -1px 0 1px white,
+            1px 0 0 1px white,
+            0 1px 0 1px white,
+            -1px 0 0 2px #005CB9
+            ;
+        }
+        50% {
+            box-shadow:
+                -1px 0 0 1px white,
+                1px 0 0 1px white,
+                0 1px 0 1px white,
+                0 -1px 0 2px #005CB9
+            ;
+        }
+        75% {
+            box-shadow:
+                -1px 0 0 1px white,
+                0 -1px 0 1px white,
+                0 1px 0 1px white,
+                1px 0 0 2px #005CB9
+            ;
+        }
+        100% {
+            box-shadow:
+                -1px 0 0 1px white,
+                0 -1px 0 1px white,
+                1px 0 0 1px white,
+                0 1px 0 2px #005CB9
+            ;
+        }
+    }
     .btn-main {
         padding: 8px 26px;
         background-color: #4476AF;
@@ -279,26 +322,64 @@
         user-select: none;
         transition: all .15s;
     }
-    .btn-main:hover {
+    .btn-main-icon {
+        padding: 11px 9px 4px 9px;
+        background-color: #4476AF;
+        color: white;
+        border-radius: 12px;
+        border: 2px solid #4476AF;
         outline: none;
-        background-color: white;
-        color: #4476AF;
-        border: 2px solid #005CB9;
+        cursor: pointer;
+        user-select: none;
+        transition: all .15s;
     }
-    .btn-main:focus {
-        outline: none;
-        border: 2px solid #005CB9;
-    }
-    .btn-main:active {
+    .btn-main-icon-open {
         outline: none;
         background-color: #639fe2;
         color: white;
         border: 2px solid #005CB9;
     }
+    .btn-main-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    .btn-main:hover, .btn-main-icon:hover {
+        outline: none;
+        background-color: white;
+        color: #4476AF;
+        border: 2px solid #005CB9;
+    }
+    .btn-main:focus, .btn-main-icon:focus {
+        outline: none;
+        border: 2px solid #005CB9;
+    }
+    .btn-main:active, .btn-main-icon:active {
+        outline: none;
+        background-color: #639fe2;
+        color: white;
+        border: 2px solid #005CB9;
+    }
+    .btn-loading {
+        animation-name: ani-btn-loading;
+        animation-duration: .75s;
+        animation-iteration-count: infinite;
+    }
 
 
 
 /* SEARCH */
+    .filter-row {
+        max-height: 0;
+        margin: 11px 0;
+        overflow: hidden;
+        border-radius: 12px;
+        transition: linear all .2s;
+    }
+    .filter-row-show {
+        max-height: 200px;
+        box-shadow: 0 0 0 1px #76BAFF;
+        background-color: #f4f9ff;
+    }
     .filterby-text {
         margin: 4px 0;
         font-size: 12px;
@@ -311,7 +392,7 @@
     .results {
         overflow: auto;
         padding: 0;
-        max-height: 443px;
+        max-height: 662px;
         min-height: 100px;
         border: 2px solid #e2e2e2;
         border-radius: 10px;
@@ -330,7 +411,7 @@
         transition: all .05s;
     }
     .result:hover {
-        background-color: #fbf6ef;
+        background-color: #f0f0f0;
     }
     .result-icon {
         padding: 7px 4px 7px 14px;
@@ -366,15 +447,26 @@
 
 /* MAP */
     #map {
-        height: 443px;
-        border-radius: 6px;
+        height: 662px;
         border: 2px solid #d6d6d6;
+        border-radius: 10px;
     }
     @media handheld, only screen and (min-width: 0px) and (max-width: 991px) {
         #map {
             margin-top: 10px;
             height: 360px;
         }
+    }
+    #map-info {
+        background-color: white;
+        border: 2px solid;
+        border-color: #c2c2c2 #e2e2e2 #e2e2e2 #e2e2e2;
+        border-radius: 0 0 10px 10px;
+        position: relative;
+        bottom: 140px;
+        z-index: 99;
+        height: 140px;
+        margin-bottom: -140px;
     }
 
 

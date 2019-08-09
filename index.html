@@ -59,22 +59,29 @@
 							<!-- <div class="container mt-4"> -->
 							<div class="container">
 								<div class="row">
-									<div class="col-xl-6 col-lg-8 col-md-10 col-12">
+									<div class="col-12">
 										<div class="container-fluid">
 											<div class="row">
-												<div class="col-md-10 col-12 p-0">
+												<div class="col-lg-9 col-md-8 col-12 pr-md-3 p-0">
 													<input type="text" id="search" name="search" class="col input-field" v-model="search" v-on:keyup.enter="CallMiTalentAPI">
 												</div>
 
-												<div class="col-md-2 col-12 text-center mt-md-0 mt-2">
-													<button class="btn-main" @click="CallMiTalentAPI">
+												<div class="col-md-2 col-8 text-center mt-md-0 mt-2">
+													<button class="btn-main" v-bind:class="{'btn-loading': pending === true}" @click="CallMiTalentAPI">
 														<span v-show="pending !== true">Search</span>
 														<span v-cloak v-show="pending === true">Loading...</span>
 													</button>
 												</div>
+
+												<div class="col-lg-1 col-md-2 col-4 mt-md-0 mt-2 text-md-center text-left">
+													<button class="btn-main-icon" v-bind:class="{'btn-main-icon-open': show_filter}" @click="ToggleFilter()">
+														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+														<!-- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg> -->
+													</button>
+												</div>
 											</div>
 
-											<div class="row pl-2">
+											<div class="filter-row row pl-2" v-bind:class="{'filter-row-show': show_filter}">
 												<div class="container-fluid">
 													<div class="row">
 														<span class="filterby-text">filter by:</span>
@@ -112,7 +119,7 @@
 									<div class="col-xl-6 col-lg-7 col-12 results">
 										<div v-show="results_filtered.length === 0" class="container-fluid">
 											<div class="row justify-content-center mt-4">
-												<small>Use the search bar above to find schools.</small>
+												<small class="pl-3 pr-3 text-center">Use the search bar above to find schools or programs.</small>
 											</div>
 										</div>
 										
@@ -137,39 +144,35 @@
 
 									<div class="col-xl-6 col-lg-5 col-12 pl-lg-3 pr-lg-0 p-0">
 										<div id="map"></div>
-									</div>
-								</div>
 
-								<div v-cloak class="row mt-2" v-if="result_selected">
-									<div class="container-fluid details">
-										<div class="row">
-											<div class="col-lg-7 col-12 p-0">
-												<div class="details-name">{{result_selected.InstName1}}</div>
-												<div class="details-type">{{result_selected.InstType}}</div>
-												<div class="details-address-street">{{result_selected.Address1}}<span v-if="result_selected.Address2 !== ''"> {{result_selected.Address2}}</span></div>
-												<div class="details-address-csz">{{result_selected.City}}, {{result_selected.State}} {{result_selected.Zip}}</div>
-												<div class="details-url">
-													<span v-show="result_selected.URL.replace('http://', '').replace('https://', '') !== ''">
-														<a v-bind:href="result_selected.URL" target="_blank" rel="noopener noreferrer">{{result_selected.URL}}</a>
-													</span>
+										<div id="map-info" class="container-fluid">
+											<div class="row" v-if="!result_selected"></div>
+
+											<div v-cloak class="row" v-if="result_selected">
+												<div class="col-lg-7 col-12 p-0">
+													<div class="details-name">{{result_selected.InstName1}}</div>
+													<div class="details-type">{{result_selected.InstType}}</div>
+													<div class="details-address-street">{{result_selected.Address1}}<span v-if="result_selected.Address2 !== ''"> {{result_selected.Address2}}</span></div>
+													<div class="details-address-csz">{{result_selected.City}}, {{result_selected.State}} {{result_selected.Zip}}</div>
+													<div class="details-url">
+														<span v-show="result_selected.URL.replace('http://', '').replace('https://', '') !== ''">
+															<a v-bind:href="result_selected.URL" target="_blank" rel="noopener noreferrer">{{result_selected.URL}}</a>
+														</span>
+													</div>
 												</div>
-											</div>
-											
-											<div class="col-lg-5 col-12 p-lg-0 p-0 pt-4">
-												<div class="details-contact-name">{{result_selected.Contact}}</div>
-												<div class="details-contact-title">{{result_selected.ContactTitle}}</div>
-												<div class="details-contact-phone">
-													<span v-if="result_selected.Telephone !== null">
-														<a v-bind:href="'tel:' + result_selected.Telephone">{{result_selected.Telephone}}<span v-if="result_selected.TeleExt !== ''"> - {{result_selected.TeleExt}}</span></a>
-													</span>
+												
+												<div class="col-lg-5 col-12 p-lg-0 p-0 pt-4">
+													<div class="details-contact-name">{{result_selected.Contact}}</div>
+													<div class="details-contact-title">{{result_selected.ContactTitle}}</div>
+													<div class="details-contact-phone">
+														<span v-if="result_selected.Telephone !== null">
+															<a v-bind:href="'tel:' + result_selected.Telephone">{{result_selected.Telephone}}<span v-if="result_selected.TeleExt !== ''"> - {{result_selected.TeleExt}}</span></a>
+														</span>
+													</div>
 												</div>
 											</div>
 										</div>
 									</div>
-								</div>
-
-								<div v-cloak class="row justify-content-center mt-2">
-									{{debugText}}
 								</div>
 							</div>
 						</div>

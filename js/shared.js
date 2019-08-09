@@ -62,6 +62,7 @@ var MainVue = new Vue({
   el: '#app-container',
   data: {
     search: '',
+    show_filter: false,
     filter: '',
     pending: false,
     results: [],
@@ -118,7 +119,7 @@ var MainVue = new Vue({
       MainVue.map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
-        center: [-86.025094, 44.598853], // starting position
+        center: [-86.025094, 43.4], // starting position
         zoom: 5 // starting zoom
       });
 
@@ -241,6 +242,10 @@ var MainVue = new Vue({
     {
       var pi = Math.PI;
       return degrees * (pi/180);
+    },
+    ToggleFilter: function() {
+      MainVue.show_filter = !MainVue.show_filter;
+      MainVue.filter = '';
     }
   },
   watch: {
