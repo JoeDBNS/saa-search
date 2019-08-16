@@ -63,7 +63,7 @@
 										<div class="container-fluid">
 											<div class="row">
 												<div class="col-lg-9 col-md-8 col-12 pr-md-3 p-0">
-													<input type="text" id="search" name="search" class="col input-field" v-model="search" v-on:keyup.enter="CallMiTalentAPI">
+													<input type="text" id="search" name="search" placeholder="Search..." class="col input-field" v-model="search" v-on:keyup.enter="CallMiTalentAPI">
 												</div>
 
 												<div class="col-md-2 col-8 text-center mt-md-0 mt-2">
@@ -82,32 +82,40 @@
 											</div>
 
 											<div class="filter-row row pl-2" v-bind:class="{'filter-row-show': show_filter}">
-												<div class="container-fluid">
+												<div class="col">
 													<div class="row">
-														<span class="filterby-text">filter by:</span>
+														<span class="filterby-text">Filter By:</span>
 													</div>
 
 													<div class="row">
-														<!-- <input type="radio" name="filterby" id="filterby-school" class="input-radio" value="school" v-model="filter"> -->
-														<input type="radio" name="filterby" id="filterby-school" class="input-radio" value="Community College" v-model="filter">
+														<input type="radio" name="filterby-type" id="filterby-school" class="input-radio" value="Community College" v-model="filter_type">
 														<label for="filterby-school" class="input-label-radio">
 															<div class="input-label-radio-status"></div>
 															<!-- School -->
 															Community College
 														</label>
 
-														<!-- <input type="radio" name="filterby" id="filterby-course" class="input-radio" value="course" v-model="filter"> -->
-														<input type="radio" name="filterby" id="filterby-course" class="input-radio" value="Proprietary School" v-model="filter">
+														<input type="radio" name="filterby-type" id="filterby-course" class="input-radio" value="Proprietary School" v-model="filter_type">
 														<label for="filterby-course" class="input-label-radio">
 															<div class="input-label-radio-status"></div>
 															<!-- Course -->
 															Proprietary School
 														</label>
 
-														<input type="radio" name="filterby" id="filterby-clear" class="input-radio" @click="MainVue.filter = '';" onclick="document.getElementById('filterby-clear').checked = false">
+														<input type="radio" name="filterby-type" id="filterby-clear" class="input-radio" @click="MainVue.filter_type = '';" onclick="document.getElementById('filterby-clear').checked = false">
 														<label for="filterby-clear" class="input-label-radio input-label-radio-clear">
 															Clear Filter
 														</label>
+													</div>
+												</div>
+												<div class="col">
+													<div class="row">
+														<span class="filterby-text">Within ____ Miles:</span>
+													</div>
+
+													<div class="row">
+														<input type="number" name="filterby-distance" id="filterby-school" class="input-field-filterby" v-model="filter_distance">
+														<button class="btn-main btn-set-map-point" v-bind:class="{'btn-set-map-point-active': set_filter_distance_from}" @click="MainVue.set_filter_distance_from = !MainVue.set_filter_distance_from;">Set Map Point</button>
 													</div>
 												</div>
 											</div>
@@ -123,7 +131,7 @@
 											</div>
 										</div>
 										
-										<div v-for="school in results_filtered" v-show="filter === '' || school.InstType === filter" class="container-fluid result" @click="SelectResult(school)" v-bind:data-result-id="'marker_' + school.SchoolID">
+										<div v-for="school in results_filtered" v-show="filter_type === '' || school.InstType === filter_type" class="container-fluid result" @click="SelectResult(school)" v-bind:data-result-id="'marker_' + school.SchoolID">
 											<div class="row">
 												<div class="result-icon" v-if="school.InstType === 'Proprietary School'"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
 												<div class="result-icon" v-else-if="school.InstType === 'Community College'"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-book"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
@@ -149,16 +157,11 @@
 											<div class="row" v-if="!result_selected"></div>
 
 											<div v-cloak class="row" v-if="result_selected">
-												<div class="col-lg-7 col-12 p-0">
-													<div class="details-name">{{result_selected.InstName1}}</div>
+												<div class="col-lg-7 col-12">
+													<a v-bind:href="result_selected.URL" target="_blank" rel="noopener noreferrer" class="details-name">{{result_selected.InstName1}}</a>
 													<div class="details-type">{{result_selected.InstType}}</div>
 													<div class="details-address-street">{{result_selected.Address1}}<span v-if="result_selected.Address2 !== ''"> {{result_selected.Address2}}</span></div>
 													<div class="details-address-csz">{{result_selected.City}}, {{result_selected.State}} {{result_selected.Zip}}</div>
-													<div class="details-url">
-														<span v-show="result_selected.URL.replace('http://', '').replace('https://', '') !== ''">
-															<a v-bind:href="result_selected.URL" target="_blank" rel="noopener noreferrer">{{result_selected.URL}}</a>
-														</span>
-													</div>
 												</div>
 												
 												<div class="col-lg-5 col-12 p-lg-0 p-0 pt-4">

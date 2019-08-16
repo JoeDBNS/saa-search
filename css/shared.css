@@ -206,7 +206,16 @@
         border: 1px solid #76baff;
         transition: all .2s;
     }
-    .input-field:focus {
+    .input-field-filterby {
+        -webkit-appearance: none;
+        z-index: 0;
+        padding: 4px 10px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: 1px solid #76baff;
+        transition: all .2s;
+    }
+    .input-field:focus, .input-field-filterby:focus {
         border: 1px solid #005CB9;
         box-shadow: 0 0 2px darkgrey;
         outline: none;
@@ -364,6 +373,17 @@
         animation-duration: .75s;
         animation-iteration-count: infinite;
     }
+    .btn-set-map-point {
+        padding: 1px 14px;
+        margin-left: 10px;
+        font-size: 13px;
+    }
+    .btn-set-map-point-active {
+        outline: none;
+        background-color: #639fe2;
+        color: white;
+        border: 2px solid #005CB9;
+    }
 
 
 
@@ -442,6 +462,9 @@
     [data-marker-selected="true"] {
         z-index: 2 !important;
     }
+    .marker-distance-pin {
+        z-index: 3 !important;
+    }
 
 
 
@@ -458,15 +481,16 @@
         }
     }
     #map-info {
+        position: relative;
+        bottom: 140px;
+        height: 140px;
+        padding: 4px 10px;
+        margin-bottom: -140px;
         background-color: white;
         border: 2px solid;
         border-color: #c2c2c2 #e2e2e2 #e2e2e2 #e2e2e2;
         border-radius: 0 0 10px 10px;
-        position: relative;
-        bottom: 140px;
         z-index: 99;
-        height: 140px;
-        margin-bottom: -140px;
     }
 
 
@@ -482,6 +506,7 @@
     .details-name {
         font-size: 18px;
         font-weight: 500;
+        color: black;
     }
     .details-type {
         font-size: 15px;
