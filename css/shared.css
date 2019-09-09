@@ -428,6 +428,7 @@
         padding: 5px 15px;
         border-bottom: 1px solid #e6e6e6;
         cursor: pointer;
+        user-select: none;
         transition: all .05s;
     }
     .result:hover {
@@ -506,7 +507,7 @@
     .details-name {
         font-size: 18px;
         font-weight: 500;
-        color: black;
+        color: #001087;
     }
     .details-type {
         font-size: 15px;

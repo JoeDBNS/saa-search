@@ -82,7 +82,7 @@ var MainVue = new Vue({
       if (MainVue.search.length > 0) {
         let request = new XMLHttpRequest();
 
-        // var url = "https://test-webapi.mitalent.org/pathfinder/api/Schools?$inlinecount=allpages&$filter=substringof('" + MainVue.search + "', InstName1)%20eq%20true";
+        // var url = app_environment.MiTalentTestApi.replace('__SearchVariable__', MainVue.search);
         var url = app_environment.MiTalentTestApi.replace('__SearchVariable__', MainVue.search);
 
         request.onreadystatechange = function() {
@@ -155,6 +155,12 @@ var MainVue = new Vue({
           .addTo(MainVue.map);
 
           MainVue.mapMarkers.push(newMarker);
+      });
+    },
+    FlyToLocation: function(latlong = [-86.025094, 43.4], zoom = 5) {
+      MainVue.map.flyTo({
+        center: latlong,
+        zoom: zoom
       });
     },
     SelectResult: function(result) {
