@@ -34,14 +34,31 @@ return A}}()}
 
 
 window.addEventListener('load', function() {
+  GetUrlParams();
   SetMenuListener();
   MainVue.LoadMapboxMap();
   InitFilterFromTypeahead();
+
+  if (typeof MainVue.urlParams.facilityid !== 'undefined') {
+    MainVue.GetMiTalentFacilityById(MainVue.urlParams.facilityid);
+  }
+  else {
+    MainVue.GetMiTalentFacilities();
+  }
 });
 
+function GetUrlParams() {
+	var urlParams = new URLSearchParams(window.location.search);
+	var entries = urlParams.entries();
+	var entriesDict = {};
+	var entriesArray = Array.from(entries);
+	entriesArray.forEach(function(entry) {
+		entriesDict[entry[0]] = entry[1];
+	});
+	MainVue.urlParams = entriesDict;
+}
 
-// Create event listener for menu element open
-// and close
+// Create event listener for menu element open and close
 function SetMenuListener() {
   document.querySelector('[class="nav-button"]').addEventListener('click', function() {
     if (document.body.classList.value.indexOf('nav-open') !== -1) {
@@ -71,7 +88,7 @@ function InitFilterFromTypeahead() {
       if (document.getElementById('input-filter-from').value.length > 0) {
         let request = new XMLHttpRequest();
 
-        var url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURI(document.getElementById('input-filter-from').value) + '.json?access_token=' + MainVue.mapboxToken;
+        var url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/michigan ' + encodeURI(document.getElementById('input-filter-from').value) + '.json?country=US&access_token=' + MainVue.mapbox_token;
 
         request.onreadystatechange = function() {
           if (this.readyState === 4 && this.status === 200) {
@@ -85,6 +102,9 @@ function InitFilterFromTypeahead() {
               MainVue.filter_from_typeahead_results = [];
             }
           }
+          else {
+            MainVue.filter_distance_from = null;
+          }
         }
 
         request.open("GET", url, true);
@@ -94,14 +114,12 @@ function InitFilterFromTypeahead() {
   });
 }
 
-
-
-
 // Vue
 var MainVue = new Vue({
   el: '#app-container',
   data: {
-    mapboxToken: 'pk.eyJ1Ijoiam9lZGJucyIsImEiOiJjangzZjhhb2UwdXd2M3pvNHlnY2RueTk3In0.XtTyt6DTMRb4hXfJdbbzyg',
+    urlParams: null,
+    mapbox_token: 'pk.eyJ1Ijoiam9lZGJucyIsImEiOiJjangzZjhhb2UwdXd2M3pvNHlnY2RueTk3In0.XtTyt6DTMRb4hXfJdbbzyg',
     search: '',
     show_filter: false,
     filter_type: '',
@@ -115,13 +133,13 @@ var MainVue = new Vue({
     results_filtered: [],
     result_selected: null,
     result_selected_courses: [],
-    coursesPending: false,
+    courses_pending: false,
     map: null,
-    mapMarkers: [],
-    mapDistanceMarker: null
+    map_markers: [],
+    map_distance_marker: null
   },
   methods: {
-    CallMiTalentAPI: function() {
+    GetMiTalentFacilities: function() {
       MainVue.search = MainVue.search.trim().replace(/\./g, '').replace(/\'/g, '');
 
       let request = new XMLHttpRequest();
@@ -139,7 +157,34 @@ var MainVue = new Vue({
           }
 
           MainVue.pending = false;
-          MainVue.LoadMapboxMapMarkers(MainVue.results_filtered);
+          MainVue.LoadMapboxMap_markers(MainVue.results_filtered);
+        }
+      }
+
+      request.open("GET", url, true);
+      request.send();
+
+      MainVue.pending = true;
+    },
+    GetMiTalentFacilityById: function(id) {
+      MainVue.search = MainVue.search.trim().replace(/\./g, '').replace(/\'/g, '');
+
+      let request = new XMLHttpRequest();
+
+      var url = app_environment.SAA_Facility_Id.replace('__SearchVariable__', encodeURI(id));
+
+      request.onreadystatechange = function() {
+        if (this.readyState === 4 && this.status === 200) {
+          let response = JSON.parse(this.responseText);
+          MainVue.results = [];
+          if (response.length > 0) {
+            response.forEach(function(item) {
+              MainVue.results.push(item);
+            });
+          }
+
+          MainVue.pending = false;
+          MainVue.LoadMapboxMap_markers(MainVue.results_filtered);
         }
       }
 
@@ -149,7 +194,7 @@ var MainVue = new Vue({
       MainVue.pending = true;
     },
     LoadMapboxMap: function() {
-      mapboxgl.accessToken = MainVue.mapboxToken;
+      mapboxgl.accessToken = MainVue.mapbox_token;
 
       MainVue.map = new mapboxgl.Map({
         container: 'map',
@@ -170,33 +215,38 @@ var MainVue = new Vue({
       // Add zoom and rotation controls to the map.
       MainVue.map.addControl(new mapboxgl.NavigationControl());
     },
-    LoadMapboxMapMarkers: function(markers = []) {
+    LoadMapboxMap_markers: function(markers) {
+      if (markers === null || typeof(markers) === "undefined") { markers = [] }
+
       MainVue.ClearSelectedResult();
-      MainVue.ClearMapboxMapMarkers();
+      MainVue.ClearMapboxMap_markers();
 
       markers.forEach(function(marker) {
         if (marker.latitude !== '') {
-        var el = document.createElement('div');
-        el.id = 'marker_' + marker.id;
-        el.className = 'marker';
-        el.style.backgroundImage = 'url(\'./assets/images/map-marker-icon-sml.png\')';
-        el.style.width = '20px';
-        el.style.height = '20px';
-        el.addEventListener('click', function() {
-          if (!MainVue.set_filter_distance_from) {
-            MainVue.SelectResult(marker);
-          }
-        });
+          var el = document.createElement('div');
+          el.id = 'marker_' + marker.id;
+          el.className = 'marker';
+          el.style.backgroundImage = 'url(\'./assets/images/map-marker-icon-sml.png\')';
+          el.style.width = '20px';
+          el.style.height = '20px';
+          el.addEventListener('click', function() {
+            if (!MainVue.set_filter_distance_from) {
+              MainVue.SelectResult(marker);
+            }
+          });
 
-        var newMarker = new mapboxgl.Marker(el)
+          var newMarker = new mapboxgl.Marker(el)
             .setLngLat([marker.longitude, marker.latitude])
-          .addTo(MainVue.map);
+            .addTo(MainVue.map);
 
-          MainVue.mapMarkers.push(newMarker);
+          MainVue.map_markers.push(newMarker);
         }
       });
     },
-    FlyToLocation: function(latlong = [-86.4525094, 44.55], zoom = 5) {
+    FlyToLocation: function(latlong, zoom) {
+      if (typeof(latlong) === "undefined") { latlong = [-86.4525094, 44.55] }
+      if (typeof(zoom) === "undefined") { zoom = 5 }
+
       MainVue.map.flyTo({
         center: latlong,
         zoom: zoom
@@ -244,25 +294,25 @@ var MainVue = new Vue({
       el.style.width = '20px';
       el.style.height = '20px';
 
-      MainVue.mapDistanceMarker = new mapboxgl.Marker(el, { draggable: true }).setLngLat([setLong, setLat]).addTo(MainVue.map);
+      MainVue.map_distance_marker = new mapboxgl.Marker(el, { draggable: true }).setLngLat([setLong, setLat]).addTo(MainVue.map);
 
       function onDragEnd() {
-        var lngLat = MainVue.mapDistanceMarker.getLngLat();
+        var lngLat = MainVue.map_distance_marker.getLngLat();
         MainVue.SetDistanceCenterMarker(lngLat.lat, lngLat.lng);
       }
 
-      MainVue.mapDistanceMarker.on('dragend', onDragEnd);
+      MainVue.map_distance_marker.on('dragend', onDragEnd);
     },
     ClearDistanceCenterMarker: function(marker_id) {
-      if (MainVue.mapDistanceMarker) {
-        MainVue.mapDistanceMarker.remove();
-        MainVue.mapDistanceMarker = null;
+      if (MainVue.map_distance_marker) {
+        MainVue.map_distance_marker.remove();
+        MainVue.map_distance_marker = null;
       }
     },
     SetSelectedResultById: function(result_id) {
       MainVue.ClearSelectedResult();
 
-      MainVue.results_filtered.forEach(result => {
+      MainVue.results_filtered.forEach(function(result) {
         if (result.id == result_id) {
           MainVue.result_selected = result;
           MainVue.LoadCourses(result_id);
@@ -284,26 +334,26 @@ var MainVue = new Vue({
               });
             }
 
-            MainVue.coursesPending = false;
+            MainVue.courses_pending = false;
           }
         }
 
         request.open("GET", url, true);
         request.send();
 
-        MainVue.coursesPending = true;
+        MainVue.courses_pending = true;
     },
     ClearSelectedResult: function() {
       MainVue.result_selected = null;
       MainVue.result_selected_courses = [];
     },
-    ClearMapboxMapMarkers: function() {
+    ClearMapboxMap_markers: function() {
       MainVue.HighlightMapboxMapMarker();
 
-      while (MainVue.mapMarkers.length > 0) {
-        Array.from(MainVue.mapMarkers).forEach(function(marker) {
+      while (MainVue.map_markers.length > 0) {
+        Array.from(MainVue.map_markers).forEach(function(marker) {
           marker.remove();
-          MainVue.mapMarkers.shift();
+          MainVue.map_markers.shift();
         });
       }
     },
@@ -344,7 +394,7 @@ var MainVue = new Vue({
         MainVue.results_filtered = MainVue.results;
       }
 
-      MainVue.LoadMapboxMapMarkers(MainVue.results_filtered);
+      MainVue.LoadMapboxMap_markers(MainVue.results_filtered);
     },
     GetLatLongDistance: function(latLongSet1) {
       var R = 6371e3; // metres
@@ -370,6 +420,15 @@ var MainVue = new Vue({
       MainVue.filter_type = '';
       MainVue.filter_distance = null;
       MainVue.filter_distance_from = null;
+      MainVue.ClearDistanceCenterMarker();
+    },
+    ClearFilter: function() {
+      // document.getElementById('input-filter-from').value = '';
+      MainVue.filter_type = '';
+      MainVue.filter_distance = null;
+      MainVue.filter_distance_from = null;
+      MainVue.filter_from = null;
+      MainVue.filter_from_typeahead_results = [];
       MainVue.ClearDistanceCenterMarker();
     }
   },
