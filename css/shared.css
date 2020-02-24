@@ -1026,6 +1026,9 @@
         margin-top: 6px;
         min-height: 44px;
     }
+    .details-address-street a {
+        color: darkblue;
+    }
     /* COURSES */
         #courses-container-loading {
             text-align: center;
@@ -1118,6 +1121,8 @@
             padding: 4px 12px 3px 12px;
             border-bottom: 1px solid #dee2e6;
             border-right: 1px solid #dee2e6;
+            font-size: 0.75rem;
+            line-height: 1.25rem;
         }
         #table-courses tbody tr:nth-child(even) td {
             background-color: #f4f7ff;
